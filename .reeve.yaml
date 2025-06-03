@@ -1,0 +1,32 @@
+---
+type: pipeline
+name: Build Reeve Step "Forgejo Upload Package"
+
+when:
+  workerGroup:
+    include: [soldier]
+  trigger:
+    include: [commit, action]
+  file:
+    include:
+      - config.env
+      - .reeve.yaml
+  action:
+    include: [reeveci:steps:forgejo-upload-package:build]
+
+steps:
+  - name: Load env
+    task: "@reeve/load-env-file"
+    params:
+      FILES: config.env
+      LOAD_ALL: "true"
+
+  - name: Build image
+    task: "@docker/build"
+    params:
+      DOCKER_LOGIN_REGISTRY: docker.io
+      DOCKER_LOGIN_USER: { env: docker/github/user }
+      DOCKER_LOGIN_PASSWORD: { env: docker/github/password }
+      NAME: docker.io/reeveci/step-forgejo-upload-package
+      TAG: { var: STEP_VERSION }
+      PLATFORM: amd64
