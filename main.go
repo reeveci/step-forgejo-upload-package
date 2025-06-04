@@ -39,11 +39,35 @@ func main() {
 	sort.Strings(files)
 
 	apiUrl := os.Getenv("API_URL")
+	if apiUrl == "" {
+		panic("missing API url")
+	}
+
 	apiUser := os.Getenv("API_USER")
+	if apiUser == "" {
+		panic("missing API user")
+	}
+
 	apiPassword := os.Getenv("API_PASSWORD")
+	if apiPassword == "" {
+		panic("missing API password")
+	}
+
 	packageOwner := os.Getenv("PACKAGE_OWNER")
+	if packageOwner == "" {
+		panic("missing package owner")
+	}
+
 	packageName := os.Getenv("PACKAGE_NAME")
+	if packageName == "" {
+		panic("missing package name")
+	}
+
 	packageVersion := os.Getenv("PACKAGE_VERSION")
+	if packageVersion == "" {
+		panic("missing package version")
+	}
+
 	packageRepository := os.Getenv("PACKAGE_REPOSITORY")
 
 	var packageFiles map[string]struct{}
@@ -71,7 +95,7 @@ func main() {
 		if err != nil {
 			panic(fmt.Sprintf(`error fetching package file list - %s`, err))
 		}
-		packageFiles := make(map[string]struct{}, len(packageList))
+		packageFiles = make(map[string]struct{}, len(packageList))
 		for _, packageFile := range packageList {
 			packageFiles[packageFile.Name] = struct{}{}
 		}
