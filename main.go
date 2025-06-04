@@ -70,34 +70,38 @@ func main() {
 
 	packageRepository := os.Getenv("PACKAGE_REPOSITORY")
 
+	skipExisting := os.Getenv("SKIP_EXISTING") == "true"
+
 	var packageFiles map[string]struct{}
-	requestUrl := fmt.Sprintf("%s/api/v1/packages/%s/generic/%s/%s/files", apiUrl, url.PathEscape(packageOwner), url.PathEscape(packageName), url.PathEscape(packageVersion))
-	request, err := http.NewRequest(http.MethodGet, requestUrl, nil)
-	if err != nil {
-		panic(fmt.Sprintf(`error fetching package file list - %s`, err))
-	}
-	request.SetBasicAuth(apiUser, apiPassword)
-	response, err := http.DefaultClient.Do(request)
-	if err != nil {
-		panic(fmt.Sprintf(`error fetching package file list - %s`, err))
-	}
-	if response.StatusCode != http.StatusOK {
-		response.Body.Close()
-		if response.StatusCode != http.StatusNotFound {
-			panic(fmt.Sprintf("fetching package file list returned status %v", response.StatusCode))
-		}
-	} else {
-		var packageList []struct {
-			Name string `json:"name"`
-		}
-		err := json.NewDecoder(response.Body).Decode(&packageList)
-		response.Body.Close()
+	if skipExisting {
+		requestUrl := fmt.Sprintf("%s/api/v1/packages/%s/generic/%s/%s/files", apiUrl, url.PathEscape(packageOwner), url.PathEscape(packageName), url.PathEscape(packageVersion))
+		request, err := http.NewRequest(http.MethodGet, requestUrl, nil)
 		if err != nil {
 			panic(fmt.Sprintf(`error fetching package file list - %s`, err))
 		}
-		packageFiles = make(map[string]struct{}, len(packageList))
-		for _, packageFile := range packageList {
-			packageFiles[packageFile.Name] = struct{}{}
+		request.SetBasicAuth(apiUser, apiPassword)
+		response, err := http.DefaultClient.Do(request)
+		if err != nil {
+			panic(fmt.Sprintf(`error fetching package file list - %s`, err))
+		}
+		if response.StatusCode != http.StatusOK {
+			response.Body.Close()
+			if response.StatusCode != http.StatusNotFound {
+				panic(fmt.Sprintf("fetching package file list returned status %v", response.StatusCode))
+			}
+		} else {
+			var packageList []struct {
+				Name string `json:"name"`
+			}
+			err := json.NewDecoder(response.Body).Decode(&packageList)
+			response.Body.Close()
+			if err != nil {
+				panic(fmt.Sprintf(`error fetching package file list - %s`, err))
+			}
+			packageFiles = make(map[string]struct{}, len(packageList))
+			for _, packageFile := range packageList {
+				packageFiles[packageFile.Name] = struct{}{}
+			}
 		}
 	}
 

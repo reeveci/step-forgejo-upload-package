@@ -29,5 +29,7 @@ ENV PACKAGE_VERSION=
 ENV PACKAGE_REPOSITORY=
 # FILES: Space separated list of file patterns (see https://pkg.go.dev/github.com/bmatcuk/doublestar/v4#Match) to be included (shell syntax)
 ENV FILES=
+# SKIP_EXISTING=true|false: Skip existing files to prevent the task from failing if a file has already been uploaded
+ENV SKIP_EXISTING=true
 
 ENTRYPOINT ["reeve-step"]
