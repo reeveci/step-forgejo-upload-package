@@ -68,8 +68,6 @@ func main() {
 		panic("missing package version")
 	}
 
-	packageRepository := os.Getenv("PACKAGE_REPOSITORY")
-
 	skipExisting := os.Getenv("SKIP_EXISTING") == "true"
 
 	var packageFiles map[string]struct{}
@@ -135,24 +133,27 @@ func main() {
 		}
 	}
 
-	if packageRepository != "" {
-		fmt.Printf("Linking package \"%s\" to repository \"%s\"...\n", packageName, packageRepository)
+	// DOESN'T WORK WITH CURRENT FORGEJO (POST /.../link fails if already linked, POST /.../unlink fails always)
+	/*
+		if packageRepository := os.Getenv("PACKAGE_REPOSITORY"); packageRepository != "" {
+			fmt.Printf("Linking package \"%s\" to repository \"%s\"...\n", packageName, packageRepository)
 
-		requestUrl := fmt.Sprintf("%s/api/v1/packages/%s/generic/%s/-/link/%s", apiUrl, url.PathEscape(packageOwner), url.PathEscape(packageName), url.PathEscape(packageRepository))
-		request, err := http.NewRequest(http.MethodPost, requestUrl, nil)
-		if err != nil {
-			panic(fmt.Sprintf(`error linking repository - %s`, err))
+			requestUrl := fmt.Sprintf("%s/api/v1/packages/%s/generic/%s/-/link/%s", apiUrl, url.PathEscape(packageOwner), url.PathEscape(packageName), url.PathEscape(packageRepository))
+			request, err := http.NewRequest(http.MethodPost, requestUrl, nil)
+			if err != nil {
+				panic(fmt.Sprintf(`error linking repository - %s`, err))
+			}
+			request.SetBasicAuth(apiUser, apiPassword)
+			response, err := http.DefaultClient.Do(request)
+			if err != nil {
+				panic(fmt.Sprintf(`error linking repository - %s`, err))
+			}
+			response.Body.Close()
+			if response.StatusCode != http.StatusCreated {
+				panic(fmt.Sprintf("linking repository returned status %v", response.StatusCode))
+			}
 		}
-		request.SetBasicAuth(apiUser, apiPassword)
-		response, err := http.DefaultClient.Do(request)
-		if err != nil {
-			panic(fmt.Sprintf(`error linking repository - %s`, err))
-		}
-		response.Body.Close()
-		if response.StatusCode != http.StatusCreated {
-			panic(fmt.Sprintf("linking repository returned status %v", response.StatusCode))
-		}
-	}
+	*/
 
 	fmt.Println("Done")
 }
