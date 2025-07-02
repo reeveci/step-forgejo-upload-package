@@ -25,13 +25,15 @@ func main() {
 
 	filePatterns, err := shlex.Split(os.Getenv("FILES"))
 	if err != nil {
-		panic(fmt.Sprintf("error parsing file pattern list - %s", err))
+		fmt.Printf("Error parsing file pattern list - %s\n", err)
+		os.Exit(1)
 	}
 	files := make([]string, 0, len(filePatterns))
 	for _, pattern := range filePatterns {
 		matches, err := doublestar.FilepathGlob(pattern, doublestar.WithFilesOnly())
 		if err != nil {
-			panic(fmt.Sprintf(`error parsing file pattern "%s" - %s`, pattern, err))
+			fmt.Printf("Error parsing file pattern \"%s\" - %s\n", pattern, err)
+			os.Exit(1)
 		}
 		files = append(files, matches...)
 	}
@@ -40,32 +42,38 @@ func main() {
 
 	apiUrl := os.Getenv("API_URL")
 	if apiUrl == "" {
-		panic("missing API url")
+		fmt.Println("Missing API url")
+		os.Exit(1)
 	}
 
 	apiUser := os.Getenv("API_USER")
 	if apiUser == "" {
-		panic("missing API user")
+		fmt.Println("Missing API user")
+		os.Exit(1)
 	}
 
 	apiPassword := os.Getenv("API_PASSWORD")
 	if apiPassword == "" {
-		panic("missing API password")
+		fmt.Println("Missing API password")
+		os.Exit(1)
 	}
 
 	packageOwner := os.Getenv("PACKAGE_OWNER")
 	if packageOwner == "" {
-		panic("missing package owner")
+		fmt.Println("Missing package owner")
+		os.Exit(1)
 	}
 
 	packageName := os.Getenv("PACKAGE_NAME")
 	if packageName == "" {
-		panic("missing package name")
+		fmt.Println("Missing package name")
+		os.Exit(1)
 	}
 
 	packageVersion := os.Getenv("PACKAGE_VERSION")
 	if packageVersion == "" {
-		panic("missing package version")
+		fmt.Println("Missing package version")
+		os.Exit(1)
 	}
 
 	skipExisting := os.Getenv("SKIP_EXISTING") == "true"
@@ -75,17 +83,20 @@ func main() {
 		requestUrl := fmt.Sprintf("%s/api/v1/packages/%s/generic/%s/%s/files", apiUrl, url.PathEscape(packageOwner), url.PathEscape(packageName), url.PathEscape(packageVersion))
 		request, err := http.NewRequest(http.MethodGet, requestUrl, nil)
 		if err != nil {
-			panic(fmt.Sprintf(`error fetching package file list - %s`, err))
+			fmt.Printf("Error fetching package file list - %s\n", err)
+			os.Exit(1)
 		}
 		request.SetBasicAuth(apiUser, apiPassword)
 		response, err := http.DefaultClient.Do(request)
 		if err != nil {
-			panic(fmt.Sprintf(`error fetching package file list - %s`, err))
+			fmt.Printf("Error fetching package file list - %s\n", err)
+			os.Exit(1)
 		}
 		if response.StatusCode != http.StatusOK {
 			response.Body.Close()
 			if response.StatusCode != http.StatusNotFound {
-				panic(fmt.Sprintf("fetching package file list returned status %v", response.StatusCode))
+				fmt.Printf("Fetching package file list returned status %v\n", response.StatusCode)
+				os.Exit(1)
 			}
 		} else {
 			var packageList []struct {
@@ -94,7 +105,8 @@ func main() {
 			err := json.NewDecoder(response.Body).Decode(&packageList)
 			response.Body.Close()
 			if err != nil {
-				panic(fmt.Sprintf(`error fetching package file list - %s`, err))
+				fmt.Printf("Error fetching package file list - %s\n", err)
+				os.Exit(1)
 			}
 			packageFiles = make(map[string]struct{}, len(packageList))
 			for _, packageFile := range packageList {
@@ -115,21 +127,25 @@ func main() {
 
 		file, err := os.Open(filename)
 		if err != nil {
-			panic(fmt.Sprintf(`error uploading file "%s" - %s`, filename, err))
+			fmt.Printf("Error uploading file \"%s\" - %s\n", filename, err)
+			os.Exit(1)
 		}
 		requestUrl := fmt.Sprintf("%s/api/packages/%s/generic/%s/%s/%s", apiUrl, url.PathEscape(packageOwner), url.PathEscape(packageName), url.PathEscape(packageVersion), url.PathEscape(targetName))
 		request, err := http.NewRequest(http.MethodPut, requestUrl, file)
 		if err != nil {
-			panic(fmt.Sprintf(`error uploading file "%s" - %s`, filename, err))
+			fmt.Printf("Error uploading file \"%s\" - %s\n", filename, err)
+			os.Exit(1)
 		}
 		request.SetBasicAuth(apiUser, apiPassword)
 		response, err := http.DefaultClient.Do(request)
 		if err != nil {
-			panic(fmt.Sprintf(`error uploading file "%s" - %s`, filename, err))
+			fmt.Printf("Error uploading file \"%s\" - %s\n", filename, err)
+			os.Exit(1)
 		}
 		response.Body.Close()
 		if response.StatusCode != http.StatusCreated {
-			panic(fmt.Sprintf("uploading file returned status %v", response.StatusCode))
+			fmt.Printf("Uploading file returned status %v\n", response.StatusCode)
+			os.Exit(1)
 		}
 	}
 
@@ -141,16 +157,19 @@ func main() {
 			requestUrl := fmt.Sprintf("%s/api/v1/packages/%s/generic/%s/-/link/%s", apiUrl, url.PathEscape(packageOwner), url.PathEscape(packageName), url.PathEscape(packageRepository))
 			request, err := http.NewRequest(http.MethodPost, requestUrl, nil)
 			if err != nil {
-				panic(fmt.Sprintf(`error linking repository - %s`, err))
+				fmt.Printf("Error linking repository - %s\n", err)
+				os.Exit(1)
 			}
 			request.SetBasicAuth(apiUser, apiPassword)
 			response, err := http.DefaultClient.Do(request)
 			if err != nil {
-				panic(fmt.Sprintf(`error linking repository - %s`, err))
+				fmt.Printf("Error linking repository - %s\n", err)
+				os.Exit(1)
 			}
 			response.Body.Close()
 			if response.StatusCode != http.StatusCreated {
-				panic(fmt.Sprintf("linking repository returned status %v", response.StatusCode))
+				fmt.Printf("Linking repository returned status %v\n", response.StatusCode)
+				os.Exit(1)
 			}
 		}
 	*/
