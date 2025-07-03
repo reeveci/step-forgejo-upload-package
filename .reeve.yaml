@@ -24,9 +24,7 @@ steps:
   - name: Build image
     task: "@docker/build"
     params:
-      DOCKER_LOGIN_REGISTRY: docker.io
-      DOCKER_LOGIN_USER: { env: docker/github/user }
-      DOCKER_LOGIN_PASSWORD: { env: docker/github/password }
+      DOCKER_LOGIN_REGISTRIES: { env: docker/hub/login }
       NAME: docker.io/reeveci/step-forgejo-upload-package
       TAG: { var: STEP_VERSION }
       PLATFORM: amd64
